@@ -1,8 +1,12 @@
 # while, estrutura de repetição (loop)
 
-a = 45
-while a < 55:
-    print(a)
-    a = a + 1
+a = 2
 
-print("O valor final de A eh", a)
+while a <= 8:
+    print(a)
+    if a == 6:
+        print("Meia")
+    elif a == 8:
+        print("Ta na hora de comer um biscoito")
+
+    a = a + 1
