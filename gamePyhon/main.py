@@ -1,16 +1,24 @@
 import arcade
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-SCREEN_TITLE = "Base de tudo"
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 800
+SCREEN_TITLE = "Didica's Game"
+CHARACTER_SCALING = 1.5
+TILE_SCALING = 0.5
+COIN_SCALING = 0.5
+SPRITE_PIXEL_SIZE = 128
+GRID_PIXEL_SIZE = (SPRITE_PIXEL_SIZE * TILE_SCALING)
+PLAYER_MOVE_SPEED = 5
+GRAVITY = 1
+PLAYER_JUMP_SPEED = 30
 
 
 class MyGame(arcade.Window):
 
-    def __init__(self, width, height, title, key):
-        super().__init__(width, height, title)
-
+    def __init__(self):
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
         arcade.set_background_color(arcade.color.WINE)
+        self.tile_map = arcade.tilemap.read_png("breja.png")
 
     def setup(self):
         # sprites aqui
@@ -42,10 +50,10 @@ class MyGame(arcade.Window):
 
 
 def main():
-    game = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    game.setup()
+    window = MyGame()
+    window.setup()
     arcade.run()
 
 
-if __name__ == "__name__":
+if __name__ == "__main__":
     main()
