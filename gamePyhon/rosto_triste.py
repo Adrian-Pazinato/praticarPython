@@ -35,10 +35,11 @@ end_angle = 180
 arcade.draw_arc_outline(x, y, width, height, arcade.color.BLACK,
                         start_angle, end_angle, 20)
 
+# bigode
 x = 300
-y = 285
+y = 282
 width = 85
-height = 36
+height = 30
 start_angle = 0
 end_angle = 120
 arcade.draw_rectangle_filled(x, y, width, height, arcade.color.BLACK)
