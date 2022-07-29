@@ -41,11 +41,6 @@ class MyGame(arcade.Window):
         pass
 
 
-def main():
-    game = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
-    game.setup()
-    arcade.run()
+arcade.finish_render()
 
-
-if __name__ == "__name__":
-    main()
+arcade.run()
