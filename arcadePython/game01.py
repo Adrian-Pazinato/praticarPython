@@ -7,7 +7,7 @@ SCREEN_HEIGHT = 600
 SCREEN_WIDTH = 900
 WINDOW_TITLE = "URUAL"
 BACKGROUND_COLOR = (159, 232, 173)
-ASSETS_PATH = pathlib.Path(__file__).resolve().parent / "img"
+ASSETS_PATH = pathlib.Path(__file__).resolve().parent / "assets"
 GROUND_WIDTH = 600
 LEVEL_WIDTH_PIXELS = GROUND_WIDTH * ((SCREEN_WIDTH * 4) // GROUND_WIDTH)
 ALL_TEXTURES = {
@@ -23,6 +23,7 @@ class oJogo(arcade.Window):
         arcade.set_background_color(BACKGROUND_COLOR)
 
     def setup(self):
+        self.elapsed_time = 0.0
         self.textures = {
             tex: arcade.load_texture(ASSETS_PATH / f"{tex}.png") for tex in ALL_TEXTURES
         }
@@ -35,7 +36,14 @@ class oJogo(arcade.Window):
         self.player_sprite.texture = self.textures["dino-run-1"]
         self.player_list = arcade.SpriteList()
         self.player_list.append(self.player_sprite)
-        self.scene.add_sprite("player", self.player_list)
+        self.scene.add_sprite("player", self.player_sprite)
+
+    def on_update(self, delta_time):
+        self.elapsed_time += delta_time
+        self.offset = int(self.elapsed_time * 10)
+        dino_frame = 1 + self.offset % 2
+        self.player_list.update()
+        self.player_sprite.texture = self.textures[f"dino-run-{dino_frame}"]
 
     def on_draw(self):
         arcade.start_render()
