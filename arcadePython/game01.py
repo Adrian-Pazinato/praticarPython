@@ -14,6 +14,8 @@ ALL_TEXTURES = {
     "dino-run-1",
     "dino-run-2",
 }
+PLAYER_SPEED = 2.0
+PLAYER_SCALE = 0.5
 
 
 class oJogo(arcade.Window):
