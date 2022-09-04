@@ -27,9 +27,9 @@ ALL_TEXTURES = {
     "nona-10",
     "nona-11",
     "nona-12",
-    "nona-morte"
-    "nona-agacha-1"
-    "nona-agacha-2"
+    "nona-morte",
+    "nona-agacha-1",
+    "nona-agacha-2",
     "inimigo_chao - 1",
     "inimigo_chao - 2",
     "inimigo_chao - 3",
@@ -55,11 +55,15 @@ ALL_TEXTURES = {
 }
 PLAYER_SPEED = 2.8
 
+DinoStates = Enum("DinoStates", "IDLING RUNNING JUMPING DUCKING CRASHING")
+GameStates = Enum("GameStates", "PLAYING GAMEOVER")
+
 
 class oJogo(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
 
+        self.dino_state = DinoStates.IDLING
         self.camera_sprites = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.camera_gui = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.set_mouse_visible(False)
@@ -71,7 +75,7 @@ class oJogo(arcade.Window):
         self.textures = {
             tex: arcade.load_texture(ASSETS_PATH / f"{tex}.png") for tex in ALL_TEXTURES
         }
-
+        self.game_state = GameStates.PLAYING
         self.scene = arcade.Scene()
 
         self.horizon_list = arcade.SpriteList()
@@ -79,8 +83,10 @@ class oJogo(arcade.Window):
             horizon_type = choice(["1", "2"])
             horizon_sprite = arcade.Sprite(
                 ASSETS_PATH / f"horizon-{horizon_type}.png")
-            horizon_sprite.hit_box = [[300, -10],
-                                      [300, -10], [300, -6], [300, -6]]
+            horizon_sprite.hit_box = [[-300, 10],
+                                      [300, 10],
+                                      [300, 6],
+                                      [300, -6]]
             horizon_sprite.left = GROUND_WIDTH * col
             horizon_sprite.bottom = 0
             self.horizon_list.append(horizon_sprite)
@@ -93,6 +99,7 @@ class oJogo(arcade.Window):
         self.player_list = arcade.SpriteList()
         self.player_list.append(self.player_sprite)
         self.scene.add_sprite("player", self.player_sprite)
+        self.dino_state = DinoStates.RUNNING
 
         self.obstacles_list = arcade.SpriteList()
         self.i_chao = arcade.Sprite(ASSETS_PATH / "inimigo_chao - 1.png")
@@ -131,6 +138,21 @@ class oJogo(arcade.Window):
                     randint(200, 400) + obstacle_sprite.width
                 )
                 self.obstacles_list.append(obstacle_sprite)
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.SPACE:
+            self.dino_state = DinoStates.JUMPING
+            self.physics_engine.jump(6)
+        elif key == arcade.key.DOWN:
+            self.dino_state = DinoStates.DUCKING
+            self.player_sprite.hit_box = self.textures["nona-agacha-1"].hit_box_points
+        elif key == arcade.key.ESCAPE:
+            exit()
+
+    def on_key_release(self, key, modifiers):
+        if key == arcade.key.SPACE:
+            self.dino_state = DinoStates.RUNNING
+            self.player_sprite.hit_box = self.textures["nona-1"].hit_box_points
 
     def on_update(self, delta_time):
         self.elapsed_time += delta_time
