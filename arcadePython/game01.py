@@ -95,6 +95,10 @@ class oJogo(arcade.Window):
         self.add_obstacles(SCREEN_WIDTH * 0.8, LEVEL_WIDTH_PIXELS)
         self.scene.add_sprite_list("obstacles", True, self.obstacles_list)
 
+        self.physics_engine = arcade.PhysicsEnginePlatformer(
+            self.player_sprite, self.horizon_list, gravity_constant=0.4
+        )
+
     def add_obstacles(self, xmin, xmax):
         xpos = xmin
         if self.i_chao.right < self.camera_sprites.goal_position[0]:
@@ -104,7 +108,7 @@ class oJogo(arcade.Window):
 
         while xpos < xmax:
             if randint(1, 5) == 1 and is_i_chao_off_camera:
-                self.i_chao.bottom = randint(40, 80)
+                self.i_chao.bottom = randint(40, 40)
                 self.i_chao.left = xpos
                 xpos += self.i_chao.width + randint(200, 400)
             else:
@@ -114,7 +118,7 @@ class oJogo(arcade.Window):
                     ASSETS_PATH / f"cactus-{cactus_size}-{variant}.png"
                 )
                 obstacle_sprite.left = xpos
-                obstacle_sprite.bottom = 20 if cactus_size == "large" else 24 
+                obstacle_sprite.bottom = 18 if cactus_size == "large" else 18
                 xpos += (
                     obstacle_sprite.width + randint(200, 400) + obstacle_sprite.width
                 )
