@@ -6,7 +6,6 @@ from random import choice, randint
 from enum import Enum
 from sys import exit
 
-DEBUG = True
 SCREEN_HEIGHT = 300
 SCREEN_WIDTH = 900
 WINDOW_TITLE = "URUAL"
@@ -30,27 +29,14 @@ ALL_TEXTURES = {
     "nona-morte",
     "nona-agacha-1",
     "nona-agacha-2",
-    "inimigo_chao - 1",
-    "inimigo_chao - 2",
-    "inimigo_chao - 3",
-    "inimigo_chao - 4",
-    "inimigo_chao - 5",
-    "inimigo_chao - 6",
-    "inimigo_chao - 7",
-    "inimigo_chao - 8",
-    "inimigo_chao - 9",
-    "inimigo_chao - 10",
-    "inimigo_chao - 11",
-    "inimigo_chao - 12",
-    "inimigo_chao - 13",
-    "inimigo_chao - 14",
-    "inimigo_chao - 15",
-    "inimigo_chao - 16",
-    "inimigo_chao - 17",
-    "inimigo_chao - 18",
-    "inimigo_chao - 19",
-    "inimigo_chao - 20",
-    "inimigo_chao - 21"
+    "lugia (1)",
+    "lugia (2)",
+    "lugia (3)",
+    "lugia (4)",
+    "lugia (5)",
+    "lugia (6)",
+    "lugia (7)",
+    "lugia (8)"
 
 }
 PLAYER_SPEED = 2.8
@@ -83,6 +69,7 @@ class oJogo(arcade.Window):
             horizon_type = choice(["1", "2"])
             horizon_sprite = arcade.Sprite(
                 ASSETS_PATH / f"horizon-{horizon_type}.png")
+            #colisao do chao
             horizon_sprite.hit_box = [[-300, 10],
                                       [300, 10], [300, -6], [-300, -6]]
             horizon_sprite.left = GROUND_WIDTH * col
@@ -91,8 +78,8 @@ class oJogo(arcade.Window):
         self.scene.add_sprite_list("horizon", False, self.horizon_list)
 
         self.player_sprite = arcade.Sprite()
-        self.player_sprite.center_x = 190
-        self.player_sprite.center_y = 54
+        self.player_sprite.center_x = 100
+        self.player_sprite.center_y = 310
         self.player_sprite.texture = self.textures["nona-1"]
         self.player_list = arcade.SpriteList()
         self.player_list.append(self.player_sprite)
@@ -100,11 +87,11 @@ class oJogo(arcade.Window):
         self.dino_state = DinoStates.RUNNING
 
         self.obstacles_list = arcade.SpriteList()
-        self.i_chao = arcade.Sprite(ASSETS_PATH / "inimigo_chao - 1.png")
-        self.i_chao.bottom = 180
-        self.i_chao.right = LEVEL_WIDTH_PIXELS - 100
-        self.obstacles_list.append(self.i_chao)
-        self.add_obstacles(SCREEN_WIDTH * 0.8, LEVEL_WIDTH_PIXELS)
+        self.lugia = arcade.Sprite(ASSETS_PATH / "lugia (1).png")
+        self.lugia.bottom = 170
+        self.lugia.right = LEVEL_WIDTH_PIXELS - 100
+        self.obstacles_list.append(self.lugia)
+        self.add_obstacles(SCREEN_WIDTH * 0.5, LEVEL_WIDTH_PIXELS)
         self.scene.add_sprite_list("obstacles", True, self.obstacles_list)
 
         self.physics_engine = arcade.PhysicsEnginePlatformer(
@@ -113,16 +100,16 @@ class oJogo(arcade.Window):
 
     def add_obstacles(self, xmin, xmax):
         xpos = xmin
-        if self.i_chao.right < self.camera_sprites.goal_position[0]:
-            is_i_chao_off_camera = True
+        if self.lugia.right < self.camera_sprites.goal_position[0]:
+            is_lugia_off_camera = True
         else:
-            is_i_chao_off_camera = False
+            is_lugia_off_camera = False
 
         while xpos < xmax:
-            if randint(1, 5) == 1 and is_i_chao_off_camera:
-                self.i_chao.bottom = randint(40, 40)
-                self.i_chao.left = xpos
-                xpos += self.i_chao.width + randint(200, 400)
+            if randint(1, 5) == 1 and is_lugia_off_camera:
+                self.lugia.bottom = randint(40, 40)
+                self.lugia.left = xpos
+                xpos += self.lugia.width + randint(200, 400)
             else:
                 cactus_size = choice(["large", "small"])
                 variant = choice(["1", "2", "3"])
@@ -130,7 +117,7 @@ class oJogo(arcade.Window):
                     ASSETS_PATH / f"cactus-{cactus_size}-{variant}.png"
                 )
                 obstacle_sprite.left = xpos
-                obstacle_sprite.bottom = 18 if cactus_size == "large" else 18
+                obstacle_sprite.bottom = 13 if cactus_size == "large" else 13
                 xpos += (
                     obstacle_sprite.width +
                     randint(200, 400) + obstacle_sprite.width
@@ -156,16 +143,12 @@ class oJogo(arcade.Window):
 
     def on_update(self, delta_time):
         self.elapsed_time += delta_time
-        self.offset = int(self.elapsed_time * 15)
+        self.offset = int(self.elapsed_time * 18)
         nona_frame = 1 + self.offset % 12
         nona_agacha_frame = 1 + self.offset % 2
         self.player_list.update()
         self.physics_engine.update()
-        # checa as colissoes
 
-        collisions = self.player_sprite.collides_with_list(self.obstacles_list)
-        if len(collisions) > 0 and DEBUG:
-            print("FDS")
         if self.dino_state == DinoStates.DUCKING:
             self.player_sprite.texture = self.textures[f"nona-agacha-{nona_agacha_frame}"]
         else:
@@ -174,8 +157,8 @@ class oJogo(arcade.Window):
         self.camera_sprites.move((self.player_sprite.left - 30, 0))
         self.score = int(self.player_sprite.left) // 15
 
-        i_chao_frame = 1 + (self.offset // 2) % 21
-        self.i_chao.texture = self.textures[f"inimigo_chao - {i_chao_frame}"]
+        i_chao_frame = 1 + (self.offset // 2) % 8
+        self.lugia.texture = self.textures[f"lugia ({i_chao_frame})"]
 
         if self.horizon_list[0].right < self.camera_sprites.goal_position[0]:
             horizon_sprite = self.horizon_list.pop(0)
