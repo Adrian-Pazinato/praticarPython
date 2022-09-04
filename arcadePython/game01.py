@@ -1,16 +1,17 @@
+from distutils.debug import DEBUG
 import arcade
 import pathlib
 from pyglet.gl import GL_NEAREST
 from random import choice, randint
 
-
+DEBUG = True
 SCREEN_HEIGHT = 300
 SCREEN_WIDTH = 900
 WINDOW_TITLE = "URUAL"
 BACKGROUND_COLOR = (110, 110, 110)
 ASSETS_PATH = pathlib.Path(__file__).resolve().parent / "assets"
 GROUND_WIDTH = 600
-LEVEL_WIDTH_PIXELS = GROUND_WIDTH * ((SCREEN_WIDTH * 4) // GROUND_WIDTH)
+LEVEL_WIDTH_PIXELS = GROUND_WIDTH * ((SCREEN_WIDTH * 6) // GROUND_WIDTH)
 ALL_TEXTURES = {
     "nona-1",
     "nona-2",
@@ -47,7 +48,7 @@ ALL_TEXTURES = {
     "inimigo_chao - 21"
 
 }
-PLAYER_SPEED = 3.0
+PLAYER_SPEED = 2.8
 
 
 class oJogo(arcade.Window):
@@ -88,7 +89,7 @@ class oJogo(arcade.Window):
 
         self.obstacles_list = arcade.SpriteList()
         self.i_chao = arcade.Sprite(ASSETS_PATH / "inimigo_chao - 1.png")
-        self.i_chao.bottom = 100
+        self.i_chao.bottom = 180
         self.i_chao.right = LEVEL_WIDTH_PIXELS - 100
         self.obstacles_list.append(self.i_chao)
         self.add_obstacles(SCREEN_WIDTH * 0.8, LEVEL_WIDTH_PIXELS)
