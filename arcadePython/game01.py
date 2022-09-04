@@ -84,9 +84,7 @@ class oJogo(arcade.Window):
             horizon_sprite = arcade.Sprite(
                 ASSETS_PATH / f"horizon-{horizon_type}.png")
             horizon_sprite.hit_box = [[-300, 10],
-                                      [300, 10],
-                                      [300, 6],
-                                      [300, -6]]
+                                      [300, 10], [300, -6], [-300, -6]]
             horizon_sprite.left = GROUND_WIDTH * col
             horizon_sprite.bottom = 0
             self.horizon_list.append(horizon_sprite)
@@ -150,14 +148,17 @@ class oJogo(arcade.Window):
             exit()
 
     def on_key_release(self, key, modifiers):
-        if key == arcade.key.SPACE:
+        if key == arcade.key.SPACE or key == arcade.key.DOWN:
             self.dino_state = DinoStates.RUNNING
             self.player_sprite.hit_box = self.textures["nona-1"].hit_box_points
+            if self.player_sprite.center_y < 44:
+                self.player_sprite.center_y = 44
 
     def on_update(self, delta_time):
         self.elapsed_time += delta_time
         self.offset = int(self.elapsed_time * 15)
-        dino_frame = 1 + self.offset % 12
+        nona_frame = 1 + self.offset % 12
+        nona_agacha_frame = 1 + self.offset % 2
         self.player_list.update()
         self.physics_engine.update()
         # checa as colissoes
@@ -165,8 +166,10 @@ class oJogo(arcade.Window):
         collisions = self.player_sprite.collides_with_list(self.obstacles_list)
         if len(collisions) > 0 and DEBUG:
             print("FDS")
-
-        self.player_sprite.texture = self.textures[f"nona-{dino_frame}"]
+        if self.dino_state == DinoStates.DUCKING:
+            self.player_sprite.texture = self.textures[f"nona-agacha-{nona_agacha_frame}"]
+        else:
+            self.player_sprite.texture = self.textures[f"nona-{nona_frame}"]
         self.player_sprite.change_x = PLAYER_SPEED
         self.camera_sprites.move((self.player_sprite.left - 30, 0))
         self.score = int(self.player_sprite.left) // 15
