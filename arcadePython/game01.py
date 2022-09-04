@@ -3,6 +3,8 @@ import arcade
 import pathlib
 from pyglet.gl import GL_NEAREST
 from random import choice, randint
+from enum import Enum
+from sys import exit
 
 DEBUG = True
 SCREEN_HEIGHT = 300
@@ -25,6 +27,9 @@ ALL_TEXTURES = {
     "nona-10",
     "nona-11",
     "nona-12",
+    "nona-morte"
+    "nona-agacha-1"
+    "nona-agacha-2"
     "inimigo_chao - 1",
     "inimigo_chao - 2",
     "inimigo_chao - 3",
@@ -72,8 +77,10 @@ class oJogo(arcade.Window):
         self.horizon_list = arcade.SpriteList()
         for col in range(LEVEL_WIDTH_PIXELS // GROUND_WIDTH):
             horizon_type = choice(["1", "2"])
-            horizon_sprite = arcade.Sprite(ASSETS_PATH / f"horizon-{horizon_type}.png")
-            horizon_sprite.hit_box = [[300, -10], [300, -10], [300, -6], [300, -6]]
+            horizon_sprite = arcade.Sprite(
+                ASSETS_PATH / f"horizon-{horizon_type}.png")
+            horizon_sprite.hit_box = [[300, -10],
+                                      [300, -10], [300, -6], [300, -6]]
             horizon_sprite.left = GROUND_WIDTH * col
             horizon_sprite.bottom = 0
             self.horizon_list.append(horizon_sprite)
@@ -120,7 +127,8 @@ class oJogo(arcade.Window):
                 obstacle_sprite.left = xpos
                 obstacle_sprite.bottom = 18 if cactus_size == "large" else 18
                 xpos += (
-                    obstacle_sprite.width + randint(200, 400) + obstacle_sprite.width
+                    obstacle_sprite.width +
+                    randint(200, 400) + obstacle_sprite.width
                 )
                 self.obstacles_list.append(obstacle_sprite)
 
@@ -129,6 +137,13 @@ class oJogo(arcade.Window):
         self.offset = int(self.elapsed_time * 15)
         dino_frame = 1 + self.offset % 12
         self.player_list.update()
+        self.physics_engine.update()
+        # checa as colissoes
+
+        collisions = self.player_sprite.collides_with_list(self.obstacles_list)
+        if len(collisions) > 0 and DEBUG:
+            print("FDS")
+
         self.player_sprite.texture = self.textures[f"nona-{dino_frame}"]
         self.player_sprite.change_x = PLAYER_SPEED
         self.camera_sprites.move((self.player_sprite.left - 30, 0))
@@ -140,6 +155,8 @@ class oJogo(arcade.Window):
         if self.horizon_list[0].right < self.camera_sprites.goal_position[0]:
             horizon_sprite = self.horizon_list.pop(0)
             horizon_sprite.left = self.horizon_list[-1].left + GROUND_WIDTH
+            self.add_obstacles(
+                self.horizon_list[-1].right, horizon_sprite.right)
             self.horizon_list.append(horizon_sprite)
 
     def on_draw(self):
@@ -147,6 +164,10 @@ class oJogo(arcade.Window):
 
         self.camera_sprites.use()
         self.scene.draw(filter=GL_NEAREST)
+        if DEBUG:
+            self.player_list.draw_hit_boxes(arcade.color.GREEN)
+            self.obstacles_list.draw_hit_boxes(arcade.color.RED)
+            self.horizon_list.draw_hit_boxes(arcade.color.GREEN_YELLOW)
         self.camera_gui.use()
         arcade.draw_text(
             f"{self.score:04}",
