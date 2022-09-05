@@ -1,4 +1,5 @@
 from distutils.debug import DEBUG
+from telnetlib import GA
 import arcade
 import pathlib
 from pyglet.gl import GL_NEAREST
@@ -12,6 +13,7 @@ WINDOW_TITLE = "URUAL"
 BACKGROUND_COLOR = (110, 110, 110)
 ASSETS_PATH = pathlib.Path(__file__).resolve().parent / "assets"
 GROUND_WIDTH = 600
+GRAMA_WIDTH = 1024
 LEVEL_WIDTH_PIXELS = GROUND_WIDTH * ((SCREEN_WIDTH * 6) // GROUND_WIDTH)
 ALL_TEXTURES = {
     "nona-1",
@@ -36,10 +38,14 @@ ALL_TEXTURES = {
     "lugia (5)",
     "lugia (6)",
     "lugia (7)",
-    "lugia (8)"
-
+    "lugia (8)",
+    "grama"
 }
 PLAYER_SPEED = 2.8
+MAX_CLOUDS = 4
+CLOUDS_YPOS_MIN = 100
+CLOUDS_YPOS_MAX = 180
+CLOUD_SPEED = -4  # indo pra esquerda, por isso negativo
 
 DinoStates = Enum("DinoStates", "IDLING RUNNING JUMPING DUCKING CRASHING")
 GameStates = Enum("GameStates", "PLAYING GAMEOVER")
@@ -64,12 +70,29 @@ class oJogo(arcade.Window):
         self.game_state = GameStates.PLAYING
         self.scene = arcade.Scene()
 
+        self.clouds_list = arcade.SpriteList()
+        for i in range(MAX_CLOUDS):
+            cloud_sprite = arcade.Sprite(ASSETS_PATH / "cloud.png")
+            cloud_sprite.left = randint(0, SCREEN_WIDTH)
+            cloud_sprite.top = randint(CLOUDS_YPOS_MIN, CLOUDS_YPOS_MAX)
+            self.clouds_list.append(cloud_sprite)
+
+        self.grama_list = arcade.SpriteList()
+        for grama in range(LEVEL_WIDTH_PIXELS // GRAMA_WIDTH):
+            grama_sprite = arcade.Sprite(
+                ASSETS_PATH / "grama.png"
+            )
+            grama_sprite.left = GRAMA_WIDTH * grama
+            grama_sprite.bottom = 0
+            self.grama_list.append(grama_sprite)
+        self.scene.add_sprite_list("grama", False, self.grama_list)
+
         self.horizon_list = arcade.SpriteList()
         for col in range(LEVEL_WIDTH_PIXELS // GROUND_WIDTH):
             horizon_type = choice(["1", "2"])
             horizon_sprite = arcade.Sprite(
                 ASSETS_PATH / f"horizon-{horizon_type}.png")
-            #colisao do chao
+            # colisao do chao
             horizon_sprite.hit_box = [[-300, 10],
                                       [300, 10], [300, -6], [-300, -6]]
             horizon_sprite.left = GROUND_WIDTH * col
@@ -140,8 +163,13 @@ class oJogo(arcade.Window):
             self.player_sprite.hit_box = self.textures["nona-1"].hit_box_points
             if self.player_sprite.center_y < 44:
                 self.player_sprite.center_y = 44
+        if self.game_state == GameStates.GAMEOVER:
+            self.setup()
 
     def on_update(self, delta_time):
+        if self.game_state == GameStates.GAMEOVER:
+            self.player_sprite.texture = self.textures["nona-morte"]
+            return
         self.elapsed_time += delta_time
         self.offset = int(self.elapsed_time * 18)
         nona_frame = 1 + self.offset % 12
@@ -149,13 +177,18 @@ class oJogo(arcade.Window):
         self.player_list.update()
         self.physics_engine.update()
 
+        collisions = self.player_sprite.collides_with_list(self.obstacles_list)
+        if len(collisions) > 0 and not DEBUG:
+            self.dino_state = DinoStates.CRASHING
+            self.game_state = GameStates.GAMEOVER
+
         if self.dino_state == DinoStates.DUCKING:
             self.player_sprite.texture = self.textures[f"nona-agacha-{nona_agacha_frame}"]
         else:
             self.player_sprite.texture = self.textures[f"nona-{nona_frame}"]
         self.player_sprite.change_x = PLAYER_SPEED
-        self.camera_sprites.move((self.player_sprite.left - 30, 0))
-        self.score = int(self.player_sprite.left) // 15
+        self.camera_sprites.move((self.player_sprite.left - 100, 0))
+        self.score = int(self.player_sprite.left) // 10
 
         i_chao_frame = 1 + (self.offset // 2) % 8
         self.lugia.texture = self.textures[f"lugia ({i_chao_frame})"]
@@ -167,8 +200,25 @@ class oJogo(arcade.Window):
                 self.horizon_list[-1].right, horizon_sprite.right)
             self.horizon_list.append(horizon_sprite)
 
+        if self.grama_list[0].right < self.camera_sprites.goal_position[0]:
+            grama_sprite = self.grama_list.pop(0)
+            grama_sprite.left = self.grama_list[-1].left + GRAMA_WIDTH
+            self.add_obstacles(
+                self.grama_list[-1].right, grama_sprite.right)
+            self.grama_list.append(grama_sprite)
+
+        self.clouds_list.move(CLOUD_SPEED, 0)
+        for c in self.clouds_list:
+            if c.right < 0:
+                c.right = SCREEN_WIDTH + randint(100, SCREEN_WIDTH * 0.25)
+                c.top = randint(CLOUDS_YPOS_MIN, CLOUDS_YPOS_MAX)
+                break
+
     def on_draw(self):
         arcade.start_render()
+
+        self.camera_gui.use()
+        self.clouds_list.draw(filter=GL_NEAREST)
 
         self.camera_sprites.use()
         self.scene.draw(filter=GL_NEAREST)
@@ -187,6 +237,28 @@ class oJogo(arcade.Window):
             anchor_x="right",
             anchor_y="top",
         )
+
+        if self.game_state == GameStates.GAMEOVER:
+            arcade.draw_text(
+                "SE FODEU!",
+                SCREEN_WIDTH // 2,
+                SCREEN_HEIGHT - 30,
+                arcade.color.RED_DEVIL,
+                44,
+                font_name="Kenney High",
+                anchor_x="center",
+                anchor_y="top",
+            )
+            arcade.draw_text(
+                "pressione 'Espaço' para reiniciar",
+                SCREEN_WIDTH // 2,
+                SCREEN_HEIGHT - 80,
+                arcade.color.RED_DEVIL,
+                24,
+                font_name="Kenney High",
+                anchor_x="center",
+                anchor_y="top",
+            )
 
 
 def main():
