@@ -41,11 +41,11 @@ ALL_TEXTURES = {
     "lugia (8)",
     "grama"
 }
-PLAYER_SPEED = 2.8
+PLAYER_SPEED = 3
 MAX_CLOUDS = 4
 CLOUDS_YPOS_MIN = 100
 CLOUDS_YPOS_MAX = 180
-CLOUD_SPEED = -4  # indo pra esquerda, por isso negativo
+CLOUD_SPEED = -5  # indo pra esquerda, por isso negativo
 
 DinoStates = Enum("DinoStates", "IDLING RUNNING JUMPING DUCKING CRASHING")
 GameStates = Enum("GameStates", "PLAYING GAMEOVER")
@@ -150,12 +150,12 @@ class oJogo(arcade.Window):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE:
             self.dino_state = DinoStates.JUMPING
-            self.physics_engine.jump(6)
+            self.physics_engine.jump(7)
         elif key == arcade.key.DOWN:
             self.dino_state = DinoStates.DUCKING
             self.player_sprite.hit_box = self.textures["nona-agacha-1"].hit_box_points
         elif key == arcade.key.ESCAPE:
-            exit()
+            self.close()
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.SPACE or key == arcade.key.DOWN:
